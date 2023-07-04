@@ -1,11 +1,18 @@
 import React, { Component } from "react";
-// const log = (...args) => console.log.apply(null, ["GoogleMap -->", ...args]);
+
 const log = (...args: any[]) => console.log("GoogleMap -->", ...args);
 
+interface Marker {
+  title: string;
+  type: string;
+}
+
 interface Props {
-    lat: number;
-    lng: number;
-    zoom: number;
+  action: null | 'reposition'| 'zoom'| 'addMarker';
+  lat: number;
+  lng: number;
+  zoom: number;
+  markers: Marker[];
 }
 
 export class GoogleMap extends Component<Props> {
@@ -15,13 +22,52 @@ export class GoogleMap extends Component<Props> {
 
   shouldComponentUpdate(nextProps: Props) {
     log("shouldComponentUpdate >>>>");
-    // log("this.props:", this.props);
-    // log("this.state:", this.state);
-    // log("nextState:", nextState);
-    // log("nextProps:", nextProps);
-    // log("<<<< shouldComponentUpdate");
-    (this.theMap as google.maps.Map).setCenter({ lat: nextProps.lat, lng: nextProps.lng });
-    (this.theMap as google.maps.Map).setZoom(nextProps.zoom);
+
+    const map = this.theMap as google.maps.Map;
+
+    switch (nextProps.action) {
+      case "reposition":
+        map.setCenter({ lat: nextProps.lat, lng: nextProps.lng });
+        log('action reposition done');
+        break;
+
+      case "zoom":
+        map.setZoom(nextProps.zoom);
+        break;
+
+      case "addMarker":
+        nextProps.markers.forEach((marker) => {
+          const newMarker = new google.maps.Marker({
+            position: map.getCenter(),
+            map: map,
+            title: marker.title,
+          });
+
+          const contentString = `
+              <div id="content">
+                <div id="siteNotice"></div>
+                <h1 class="firstHeading">${marker.title}</h1>
+                <h2>${marker.type}</h2>
+                <div id="bodyContent">
+                  <p>Some other info</p>
+                </div>
+              </div>
+          `;
+
+          const infowindow = new google.maps.InfoWindow({
+            content: contentString,
+            ariaLabel: marker.title,
+          });
+
+          newMarker.addListener("click", () => {
+            infowindow.open({
+              anchor: newMarker,
+              map: map,
+            });
+          });
+        });
+        break;
+    }
 
     return false;
   }
