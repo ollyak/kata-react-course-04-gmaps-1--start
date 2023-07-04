@@ -5,6 +5,7 @@ const log = (...args: any[]) => console.log("GoogleMap -->", ...args);
 interface Props {
     lat: number;
     lng: number;
+    zoom: number;
 }
 
 export class GoogleMap extends Component<Props> {
@@ -20,6 +21,7 @@ export class GoogleMap extends Component<Props> {
     // log("nextProps:", nextProps);
     // log("<<<< shouldComponentUpdate");
     (this.theMap as google.maps.Map).setCenter({ lat: nextProps.lat, lng: nextProps.lng });
+    (this.theMap as google.maps.Map).setZoom(nextProps.zoom);
 
     return false;
   }
@@ -28,7 +30,7 @@ export class GoogleMap extends Component<Props> {
     // log(this.mapRef);
     this.theMap = new google.maps.Map(this.mapRef.current as HTMLDivElement, {
       center: { lat: this.props.lat, lng: this.props.lng },
-      zoom: 8
+      zoom: this.props.zoom
     });
   }
 
