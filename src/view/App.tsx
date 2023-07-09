@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { FC, useState} from "react";
 import { TopBar } from "./TopBar";
 import { GoogleMap } from "./GMaps";
 
@@ -9,94 +9,88 @@ interface Marker {
    type: string;
 }
 
-interface State {
-  action: null | 'reposition'| 'zoom'| 'addMarker';
-  lat: number;
-  lng: number;
-  zoom: number;
-  newMarkerTitle: string;
-  newMarkerType: string;
-  markers: Marker[];
-}
+const App:FC<object> = () => {
+  const [action, setAction] = useState<null | 'reposition'| 'zoom'| 'addMarker'>(null);
+  const [lat, setLat] = useState<number>(-34.397);
+  const [lng, setLng] = useState<number>(150.644);
+  const [zoom, setZoom] = useState<number>(8);
+  const [newMarkerTitle, setNewMarkerTitle] = useState<string>('');
+  const [newMarkerType, setNewMarkerType] = useState<string>('');
+  const [markers, setMarkers] = useState<Marker[]>([]);
 
-export class App extends Component<object, State> {
-  state = {
-    action: null,
-    lat: -34.397,
-    lng: 150.644,
-    zoom: 8,
-    newMarkerTitle: '',
-    newMarkerType: '',
-    markers: [],
-  };
-
-  reposition = (city: string) => {
+  const reposition = (city: string) => {
+    setAction('reposition');
     switch (city) {
       case "tel aviv":
-        this.setState({ action: 'reposition', lat: 32.0042938, lng: 34.7615399});
+        setLat(32.0042938);
+        setLng(34.7615399);
         break;
       case "Novosibirsk":
-        this.setState({ action: 'reposition', lat: 55.02152447273033, lng: 82.91228750425842  });
+        setLat(55.02152447273033);
+        setLng(82.91228750425842);
         break;
       case "New York":
-        this.setState({ action: 'reposition', lat: 40.71055333585353, lng: -74.02917237756196});
+        setLat(40.71055333585353);
+        setLng(-74.02917237756196);
         break;
       default:
         alert("wrong city");
     }
   }
 
-  zoom = (zoomLevel: number) => {
-    this.setState({action: 'zoom', zoom: zoomLevel})
+  const updateZoom = (zoomLevel: number) => {
+    setAction('zoom');
+    setZoom(zoomLevel);
   }
 
-  addMarkerTitle = (title: string) => {
-    this.setState({action: null, newMarkerTitle: title})
+  const addMarkerTitle = (title: string) => {
+    setAction(null);
+    setNewMarkerTitle(title);
   }
 
-  addMarkerType = (type: string) => {
-    this.setState({action: null, newMarkerType: type})
+  const addMarkerType = (type: string) => {
+    setAction(null);
+    setNewMarkerType(type);
   }
 
-  addMarker = () => {
-    this.setState({
-      markers: [...this.state.markers,
+  const addMarker = () => {
+    setAction('addMarker');
+    setMarkers((prevMarkers) => {
+      return [...prevMarkers,
         {
-          title: this.state.newMarkerTitle,
-          type: this.state.newMarkerType
+          title: newMarkerTitle,
+          type: newMarkerType
         }
-      ],
-      action: 'addMarker'}
+      ]}
     )
   }
 
-  render() {
-    log(this.state);
-    return (
-      <div className="app">
-        <TopBar><h1>Google Maps Example in React</h1></TopBar>
-        <div className="hbox mb20">
-          <button onClick={() => this.reposition("tel aviv")}>Tel Aviv</button>
-          <button onClick={() => this.reposition("Novosibirsk")}>Novosibirsk</button>
-          <button onClick={() => this.reposition("New York")}>New York</button>
-          <input type="number" min="8" max="16" placeholder="8"
-            onChange={(event) => this.zoom(event.target.valueAsNumber)}
-          />
-        </div>
-        <div className="hbox mb20">
-          <input name="title" type="text"
-             onChange={(event) => this.addMarkerTitle(event.target.value)}
-          />
-          <select name="type"
-            onChange={(event) => this.addMarkerType(event.target.value)}
-          >
-            <option value="Cafe">Cafe</option>
-            <option value="Diner">Diner</option>
-          </select>
-          <button onClick={() => this.addMarker()}>Add marker</button>
-        </div>
-        <GoogleMap lat={this.state.lat} lng={this.state.lng} zoom={this.state.zoom} markers={this.state.markers} action={this.state.action} />
+  return (
+    <div className="app">
+      <TopBar><h1>Google Maps Example in React</h1></TopBar>
+      <div className="hbox mb20">
+        <button onClick={() => reposition("tel aviv")}>Tel Aviv</button>
+        <button onClick={() => reposition("Novosibirsk")}>Novosibirsk</button>
+        <button onClick={() => reposition("New York")}>New York</button>
+        <input type="number" min="8" max="16" placeholder="8"
+          onChange={(event) => updateZoom(event.target.valueAsNumber)}
+        />
       </div>
-    );
-  }
+      <div className="hbox mb20">
+        <input name="title" type="text"
+           onChange={(event) => addMarkerTitle(event.target.value)}
+        />
+        <select name="type"
+          onChange={(event) => addMarkerType(event.target.value)}
+        >
+          <option value="Cafe">Cafe</option>
+          <option value="Diner">Diner</option>
+        </select>
+        <button onClick={() => addMarker()}>Add marker</button>
+      </div>
+      <GoogleMap lat={lat} lng={lng} zoom={zoom} markers={markers} action={action} />
+    </div>
+  );
 }
+
+export { App };
