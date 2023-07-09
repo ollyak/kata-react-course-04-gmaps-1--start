@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import {FC, useEffect, useRef, useState} from "react";
 
 const log = (...args: any[]) => console.log("GoogleMap -->", ...args);
 
@@ -15,28 +15,33 @@ interface Props {
   markers: Marker[];
 }
 
-export class GoogleMap extends Component<Props> {
+const GoogleMap: FC<Props> = ({action, lat, lng, zoom, markers}) => {
+  const mapRef = useRef<HTMLDivElement|null>(null);
 
-  mapRef = React.createRef<HTMLDivElement>();
-  theMap: google.maps.Map | null = null;
+  const [theMap, setTheMap] = useState<google.maps.Map | null>(null);
 
-  shouldComponentUpdate(nextProps: Props) {
-    log("shouldComponentUpdate >>>>");
+  useEffect(() => {
+    setTheMap(new google.maps.Map(mapRef.current as HTMLDivElement, {
+      center: { lat: lat, lng: lng },
+      zoom: zoom
+    }));
+  }, []);
 
-    const map = this.theMap as google.maps.Map;
+  useEffect(() => {
+    const map = theMap as google.maps.Map;
 
-    switch (nextProps.action) {
+    switch (action) {
       case "reposition":
-        map.setCenter({ lat: nextProps.lat, lng: nextProps.lng });
+        map.setCenter({ lat: lat, lng: lng });
         log('action reposition done');
         break;
 
       case "zoom":
-        map.setZoom(nextProps.zoom);
+        map.setZoom(zoom);
         break;
 
       case "addMarker":
-        nextProps.markers.forEach((marker) => {
+        markers.forEach((marker) => {
           const newMarker = new google.maps.Marker({
             position: map.getCenter(),
             map: map,
@@ -68,20 +73,9 @@ export class GoogleMap extends Component<Props> {
         });
         break;
     }
+  }, [action, lat, lng, zoom, markers]);
 
-    return false;
-  }
-
-  componentDidMount() {
-    // log(this.mapRef);
-    this.theMap = new google.maps.Map(this.mapRef.current as HTMLDivElement, {
-      center: { lat: this.props.lat, lng: this.props.lng },
-      zoom: this.props.zoom
-    });
-  }
-
-  render() {
-    return <div ref={this.mapRef} className="map-box" />;
-  }
-
+   return (<div ref={mapRef} className="map-box" />);
 }
+
+export { GoogleMap };
