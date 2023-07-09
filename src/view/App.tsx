@@ -1,8 +1,8 @@
-import { FC, useState} from "react";
+import {FC, useState} from "react";
 import { TopBar } from "./TopBar";
 import { GoogleMap } from "./GMaps";
 
-const log = (...args: any[]) => console.log("App -->", ...args);
+// const log = (...args: any[]) => console.log("App -->", ...args);
 
 interface Marker {
    title: string;

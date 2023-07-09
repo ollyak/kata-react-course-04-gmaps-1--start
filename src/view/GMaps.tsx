@@ -1,4 +1,4 @@
-import {FC, useEffect, useRef, useState} from "react";
+import {FC, useEffect, useRef} from "react";
 
 const log = (...args: any[]) => console.log("GoogleMap -->", ...args);
 
@@ -17,34 +17,34 @@ interface Props {
 
 const GoogleMap: FC<Props> = ({action, lat, lng, zoom, markers}) => {
   const mapRef = useRef<HTMLDivElement|null>(null);
-
-  const [theMap, setTheMap] = useState<google.maps.Map | null>(null);
+  const theMap = useRef<google.maps.Map|null>(null);
 
   useEffect(() => {
-    setTheMap(new google.maps.Map(mapRef.current as HTMLDivElement, {
-      center: { lat: lat, lng: lng },
-      zoom: zoom
-    }));
+    setTimeout(() => {
+      theMap.current = new google.maps.Map(mapRef.current as HTMLDivElement, {
+        center: { lat: lat, lng: lng },
+        zoom: zoom
+      });
+    }, 500);
+
   }, []);
 
   useEffect(() => {
-    const map = theMap as google.maps.Map;
-
     switch (action) {
       case "reposition":
-        map.setCenter({ lat: lat, lng: lng });
+        theMap?.current?.setCenter({ lat: lat, lng: lng });
         log('action reposition done');
         break;
 
       case "zoom":
-        map.setZoom(zoom);
+        theMap?.current?.setZoom(zoom);
         break;
 
       case "addMarker":
         markers.forEach((marker) => {
           const newMarker = new google.maps.Marker({
-            position: map.getCenter(),
-            map: map,
+            position: theMap?.current?.getCenter(),
+            map: theMap?.current,
             title: marker.title,
           });
 
@@ -67,7 +67,7 @@ const GoogleMap: FC<Props> = ({action, lat, lng, zoom, markers}) => {
           newMarker.addListener("click", () => {
             infowindow.open({
               anchor: newMarker,
-              map: map,
+              map: theMap?.current,
             });
           });
         });
